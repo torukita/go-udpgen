@@ -50,7 +50,7 @@ var arootCmd = &cobra.Command{
 
 		err := config.Exec()
 		if err != nil {
-			log.Fatal("eeeee:", err)
+			log.Fatal(err)
 		}
 		log.Println("Done Send")
 	},

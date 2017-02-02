@@ -10,6 +10,20 @@ import(
 	"github.com/torukita/go-udpgen/pkt"	
 )
 
+var (
+	allowedNet = []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}
+)
+
+func IsAllowedNet(s string) bool {
+	for _, v := range allowedNet {
+		_, ipnet, _ := net.ParseCIDR(v)
+		if ipnet.Contains(net.ParseIP(s)) {
+			return true
+		}
+	}
+	return false
+}
+
 type Config struct {
 	Device    string        `json:"device"`
 	Core      int           `json:"core"`
@@ -110,8 +124,9 @@ func (c *Config)parse() error {
 	if _, err := net.ParseMAC(c.DstEth); err != nil {
 		return err
 	}
-	if net.ParseIP(c.SrcIP) == nil || net.ParseIP(c.DstIP) == nil {
-		return fmt.Errorf("Could not parse IP")
+	if !IsAllowedNet(c.SrcIP) || !IsAllowedNet(c.DstIP) {
+		return fmt.Errorf("Denited IP")
 	}
 	return nil
 }
+
