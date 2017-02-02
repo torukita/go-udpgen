@@ -1,9 +1,9 @@
-package main
+package server
 
 import(
 	_ "github.com/vishvananda/netlink"
 	"github.com/torukita/go-udpgen/util"
-	"github.com/torukita/go-udpgen/web/resource"	
+	"github.com/torukita/go-udpgen/server/resource"	
 	"github.com/labstack/echo"
 	"text/template"
 	"net/http"
@@ -22,7 +22,6 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 		}
 	}
 	return nil
-//	return t.templates.ExecuteTemplate(w, name, data)
 }
 
 func MainPage(c echo.Context) error {
@@ -57,6 +56,3 @@ func Run(addr string, debug bool) {
 	e.Logger.Fatal(e.Start(addr))
 }
 
-func main() {
-	Run(":9000", false)
-}
