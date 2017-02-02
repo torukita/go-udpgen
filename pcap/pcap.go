@@ -3,12 +3,10 @@ package pcap
 import (
 	"github.com/google/gopacket/pcap"
 	"time"
-	"log"
 )
 
 var (
-	device       string        = "en0"
-	snapshot_len int32         = 1024
+	snapshot_len int32         = 64
 	promiscuous  bool          = false
 	timeout      time.Duration = 30 * time.Second
 )
@@ -26,9 +24,15 @@ func Close(handle *pcap.Handle) {
 }
 
 func Send(handle *pcap.Handle, packet []byte) error {
-	err := handle.WritePacketData(packet)
-	if err != nil {
-		log.Fatal(err)
+	if err := handle.WritePacketData(packet); err != nil {
+		return err
 	}
-	return err
+	return nil
+}
+
+func SendOne(handle *pcap.Handle, packet []byte) error {
+	if err := handle.WritePacketData(packet); err != nil {
+		return err
+	}
+	return nil
 }
