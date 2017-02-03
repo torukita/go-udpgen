@@ -3,7 +3,8 @@ package server
 import(
 	_ "github.com/vishvananda/netlink"
 	"github.com/torukita/go-udpgen/util"
-	"github.com/torukita/go-udpgen/server/resource"	
+	"github.com/torukita/go-udpgen/server/resource"
+	"github.com/torukita/go-udpgen/api"	
 	"github.com/labstack/echo"
 	"text/template"
 	"net/http"
@@ -50,6 +51,10 @@ func Run(addr string, debug bool) {
 	e := echo.New()
 	e.Debug = debug
 	e.Renderer = t
+
+	// Define Rest API
+	g := e.Group("/api")
+	g.POST("/send", api.WebSend)
 	
 	e.GET("/", MainPage)
 	e.GET("/js/utils.js", JS)

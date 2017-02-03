@@ -48,7 +48,7 @@ var sendCmd = &cobra.Command{
 		config.Second = time.Duration(viper.GetInt64("time")) * time.Second
 		config.Count = uint64(viper.GetInt64("count"))
 
-		err := config.Exec()
+		err := config.ExecFromCLI()
 		if err != nil {
 			log.Fatal(err)
 		}
