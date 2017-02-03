@@ -25,19 +25,20 @@ func IsAllowedNet(s string) bool {
 }
 
 type Config struct {
-	Device    string        `json:"device"`
-	Core      int           `json:"core"`
+	Device    string         `json:"device"`
+	Core      int            `json:"core"`
 	Count     uint64         `json:"count"`
-	Second    time.Duration `json:"second"`
-	SrcEth    string        `json:"srceth"`
-	DstEth    string        `json:"dsteth"`
-	SrcIP     string        `json:"srcip"`
-	DstIP     string        `json:"srcdst"`
+	Second    time.Duration  `json:"second"`
+	SrcEth    string         `json:"srceth"`
+	DstEth    string         `json:"dsteth"`
+	SrcIP     string         `json:"srcip"`
+	DstIP     string         `json:"srcdst"`
 	SrcPort   uint16         `json:"srcport"`
 	DstPort   uint16         `json:"dstport"`
 }
 
 func NewConfig() *Config {
+	// initial param is changed in the later
 	return &Config{
 		Device: "eth0",
 		Core: runtime.NumCPU(),

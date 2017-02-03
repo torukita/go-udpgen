@@ -8,46 +8,45 @@ import (
 	"log"
 	"strconv"
 	"time"
-	_ "context"
+	"os"
 )
+
+var version = "v0.0.2"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version",
-	Long:  `All software has versions.`,
+	Long:  `go-udpgen application version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("v0.0.1")
+		fmt.Println(version)
 	},
 }
 
-/*
-var RootCmd = &cobra.Command{
-	Use:   "go-udpgen",
-	Short: "go-udpgen golang",
-	Long:  `This program is example collections for golagn`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("command root")
+var sendCmd = &cobra.Command{
+	Use:   "send [Interface Name]",
+	Short: "Send UDP packets",
+	Long:  `go-udpgen send can be used to send UDP packates from CLI`,
+	Example: `$ go-udpgen send eth0 --dst-ip 10.10.10.10`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			cmd.Help()
+			os.Exit(-1)
+		}
 	},
-}
-*/
-
-var RootCmd = &cobra.Command{
-	Use:   "go-udpgen",
-	Short: "udp generator for golang",
-	Long:  `UDP packets generate from cmd or web`,
 	Run: func(cmd *cobra.Command, args []string) {
+		devicename := args[0]
 		config := api.NewConfig()
-		config.Device = viper.GetString("root.device")
-		config.SrcEth = viper.GetString("root.src-eth")
-		config.DstEth = viper.GetString("root.dst-eth")
-		config.SrcIP = viper.GetString("root.src-ip")
-		config.DstIP = viper.GetString("root.dst-ip")		
-		udp_src, _ := strconv.Atoi(viper.GetString("root.src-port"))
-		udp_dst, _ := strconv.Atoi(viper.GetString("root.dst-port"))
+		config.Device = devicename
+		config.SrcEth = viper.GetString("src-eth")
+		config.DstEth = viper.GetString("dst-eth")
+		config.SrcIP = viper.GetString("src-ip")
+		config.DstIP = viper.GetString("dst-ip")		
+		udp_src, _ := strconv.Atoi(viper.GetString("src-port"))
+		udp_dst, _ := strconv.Atoi(viper.GetString("dst-port"))
 		config.SrcPort = uint16(udp_src)
 		config.DstPort = uint16(udp_dst)
-		config.Second = time.Duration(viper.GetInt64("root.time")) * time.Second
-		config.Count = uint64(viper.GetInt64("root.count"))
+		config.Second = time.Duration(viper.GetInt64("time")) * time.Second
+		config.Count = uint64(viper.GetInt64("count"))
 
 		err := config.Exec()
 		if err != nil {
@@ -57,10 +56,44 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-func init() {
-//	RootCmd.AddCommand(arootCmd)
-	RootCmd.AddCommand(versionCmd)
+var RootCmd = &cobra.Command{
+	Use:   "go-udpgen",
+	Short: "udp generator for golang",
+	Long:  `go-udpgen can be used to send UDP packets from CLI or WEB`,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
+}
 
+func init() {
+	RootCmd.AddCommand(versionCmd)
+	RootCmd.AddCommand(sendCmd)
+
+	sendCmd.Flags().String("src-eth", "00:00:00:00:00:01", "Source mac address")
+	viper.BindPFlag("src-eth", sendCmd.Flags().Lookup("src-eth"))
+
+	sendCmd.Flags().String("dst-eth", "00:00:00:00:00:02", "Dest mac address")
+	viper.BindPFlag("dst-eth", sendCmd.Flags().Lookup("dst-eth"))
+
+	sendCmd.Flags().String("src-ip", "10.0.40.1", "Source IP address")
+	viper.BindPFlag("src-ip", sendCmd.Flags().Lookup("src-ip"))
+
+	sendCmd.Flags().String("dst-ip", "10.0.40.2", "Dest IP address")
+	viper.BindPFlag("dst-ip", sendCmd.Flags().Lookup("dst-ip"))
+
+	sendCmd.Flags().String("src-port", "9999", "UDP source port")
+	viper.BindPFlag("src-port", sendCmd.Flags().Lookup("src-port"))
+
+	sendCmd.Flags().String("dst-port", "9999", "UDP dest port")
+	viper.BindPFlag("dst-port", sendCmd.Flags().Lookup("dst-port"))
+
+	sendCmd.Flags().Uint64("time", 0, "seconds which keeps sending packtes")
+	viper.BindPFlag("time", sendCmd.Flags().Lookup("time"))
+
+	sendCmd.Flags().Uint64("count", 1, "The number of packets to be send")
+	viper.BindPFlag("count", sendCmd.Flags().Lookup("count"))	
+
+/*	
 	RootCmd.Flags().String("src-eth", "00:00:00:00:00:01", "Source mac address")
 	RootCmd.Flags().String("dst-eth", "00:00:00:00:00:02", "Dest mac address")
 	RootCmd.Flags().String("src-ip", "10.0.40.1", "Source IP address")
@@ -81,5 +114,6 @@ func init() {
 	viper.BindPFlag("root.device", RootCmd.Flags().Lookup("device"))
 	viper.BindPFlag("root.time", RootCmd.Flags().Lookup("time"))
 	viper.BindPFlag("root.count", RootCmd.Flags().Lookup("count"))
+*/
 
 }
