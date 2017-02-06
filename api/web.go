@@ -10,16 +10,30 @@ import(
 	"github.com/torukita/go-udpgen/pkt"	
 )
 
+var (
+	procSend int = 0
+)
+
 func WebSend(c echo.Context) error {
 	req := new(Config)
 	if err := c.Bind(req); err != nil {
 		return err
 	}
-	err := req.ExecFromWeb()
-	if err != nil {
-		fmt.Println(err)
+
+	if procSend > 0 {
+		return c.JSON(http.StatusBadRequest, nil)
 	}
-	return c.JSON(http.StatusOK, nil)
+	procSend++
+//	fmt.Printf("Start(%v)", procSend)	
+	err := req.ExecFromWeb()
+	procSend--
+//	fmt.Printf("Stop(%v)", procSend)
+	
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	//return c.JSON(http.StatusAccepted, nil)
+	return c.JSON(http.StatusOK, nil)	
 }
 
 func (c *Config)ExecFromWeb() error {
@@ -31,6 +45,7 @@ func (c *Config)ExecFromWeb() error {
 		return err
 	}
 	defer func() {
+		fmt.Println("handle closed")
 		handle.Close()
 	}()
 
@@ -59,6 +74,7 @@ func (c *Config)ExecFromWeb() error {
 }
 
 func Send(handle interface{}, packet []byte) error {
+//	fmt.Println(time.Now())
 	return nil
 }
 

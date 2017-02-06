@@ -26,6 +26,12 @@ type Arp struct {
 
 type ArpTable []Arp
 
+type IP struct {
+	IP      string
+}
+
+type IPs []IP
+
 func linkListFromNetPackage() Devices {
 	devices := make(Devices, 0)
 	ifaces, _ := net.Interfaces()
@@ -70,6 +76,26 @@ func ArpList(linkIndex int) ArpTable {
 		})
 	}
 	return table
+}
+
+func IPByIndex(index int) IPs {
+	ips := make(IPs, 0)
+	iface, err := net.InterfaceByIndex(index)
+	if err != nil {
+		return ips
+	}
+	if addrs, err := iface.Addrs(); err == nil {
+		for _, addr := range(addrs) {
+			if ipnet, ok := addr.(*net.IPNet); ok {
+				if ipnet.IP.To4() != nil {
+					ips = append(ips, IP{
+						IP: fmt.Sprintf("%s", ipnet.IP),
+					})
+				}
+			}
+		}
+	}
+	return ips
 }
 
 func init() {
