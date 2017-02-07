@@ -15,8 +15,8 @@ Client.prototype.getIPByIndex = function(index) {
     return this.client.GET(this.baseUrl + "device/" + index + "/ipv4")
 };
 
-Client.prototype.postFlow = function(json) {
-    return this.client.POST(this.baseUrl + "/flow", json)
+Client.prototype.postConfig = function(json) {
+    return this.client.POST(this.baseUrl + "config", json)
 };
 
 // Never use this class from user program

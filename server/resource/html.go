@@ -59,7 +59,7 @@ const(
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dst Addr <span class="caret"></span></button>
             <ul class="dropdown-menu" id="dst-eth-list"></ul>
           </div>
-          <input type="text" class="form-control" id="dst-eth" name="DstEth" placeholder="Destination MacAddress" aria-label="...">
+          <input type="text" class="form-control" id="dst-eth" name="DstEth" value="00:00:00:00:00:02" aria-label="...">
         </div>
       </div>
     </div><!-- dst eth -->
@@ -77,7 +77,7 @@ const(
             <ul class="dropdown-menu" id="dst-ip-list">
             </ul>
           </div>
-          <input type="text" class="form-control" id="dst-ip" name="DstIP" placeholder="Destination IP" aria-label="...">
+          <input type="text" class="form-control" id="dst-ip" name="DstIP" value="10.0.0.2" aria-label="...">
         </div>
       </div><!-- dst ip -->
     </div>
@@ -103,6 +103,7 @@ $(function() {
 
 var notice = new Notifier({selector: "#status"});
 var api = new Client();
+var deviceName;
 
 function DeviceList() {
     api.getDevices().done(function (devices) {
@@ -117,6 +118,8 @@ function DeviceList() {
 
 $('#device-list').on("click", "a.device", function(evt) {
     evt.preventDefault();
+    deviceName = $(this).html();
+    console.log(deviceName);
     var index = $(this).attr('deviceIndex');
     var macAddr = $(this).attr('macAddr');
     var ip = "10.0.0.1"; // default IP
@@ -158,9 +161,26 @@ $('#dst-ip-list').on("click", "a.dstip", function(evt) {
 });
 
 $('#form-post').on('click', function() {
-    var data = JSON.stringify( $('#udpgen-config').serializeArray());
-    console.log(data);
+    var data = $('#udpgen-config').serializeArray();
+    var config = mkConfigData(data);
+    console.log(config);
+    api.postConfig(JSON.stringify(config)).done(function(data) {
+        console.log("Sent");
+    });
 });
+
+function mkConfigData(data) {
+    var value = {};
+    for (idx = 0; idx < data.length; idx++) {
+        if (data[idx].value != "") { // checked if value is empty string
+            value[data[idx].name] = data[idx].value
+        }
+    }
+    value.SrcPort = Number(value.SrcPort);
+    value.DstPort = Number(value.DstPort);
+    value.Device = deviceName;
+    return value;
+}
 
 </script>
 </body>
@@ -184,8 +204,8 @@ Client.prototype.getIPByIndex = function(index) {
     return this.client.GET(this.baseUrl + "device/" + index + "/ipv4")
 };
 
-Client.prototype.postFlow = function(json) {
-    return this.client.POST(this.baseUrl + "/flow", json)
+Client.prototype.postConfig = function(json) {
+    return this.client.POST(this.baseUrl + "config", json)
 };
 
 // Never use this class from user program

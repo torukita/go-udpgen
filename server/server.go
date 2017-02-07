@@ -50,20 +50,22 @@ func Run(addr string, debug bool) {
 	// Define Rest API
 	g := e.Group("/api")
 	g.POST("/send", api.WebSend)
+	g.POST("/config", Test)	
 	g.GET("/devices", getDevices) // Not used on this app
 	g.GET("/device/:index/arp", getArpTable)
 	g.GET("/device/:index/ipv4", getIPByIndex)
 	
 	e.GET("/", MainPage)
 	e.GET("/js/utils.js", JS)
-	e.POST("/test", Test)
 	e.Logger.Fatal(e.Start(addr))
 }
 
 func Test(c echo.Context) error {
-	fmt.Println("Got this line")
-	fmt.Println(c.Request())
-	fmt.Println(c.FormParams())
+	req := api.NewConfig()
+	if err := c.Bind(req); err != nil {
+		return err
+	}
+	fmt.Printf("%+v", req)
 	return c.JSON(http.StatusOK, nil)
 }
 
