@@ -13,22 +13,23 @@
 </head>
 <body>
   <h1>Simple UDP Generator</h1>
-  <div class="container">
+    <div class="container">
+    <form id="udpgen-config">
     <div class="row">
       <div class="col-md-12"><div id="status"></div></div></div>
     <div class="row">
       <div class="col-md-3">
-        <div class="btn-group" role="group" aria-label="...">
-          <div class="btn-group">
+        <div class="input-group">
+          <div class="input-group-btn">
             <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">devices <span class="caret"></span></button>
             <ul class="dropdown-menu" id="device-list"></ul>
           </div>
+          <input type="text" class="form-control" id="devicename" name="Device" value="" placeholder="Select device" aria-label="...">
         </div>
       </div>
       <div class="col-md-9"></div>
     </div>
     <br/>
-    <form id="udpgen-config">
     <div class="row">
       <div class="col-md-6">
         <div class="input-group">
@@ -79,6 +80,34 @@
     </div>
     <br/>
     <div class="row">
+      <div class="col-md-2">
+        <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">Count</span>
+          <input type="text" class="form-control" id="count" name="Count" value="1" aria-describedby="basic-addon1">
+          </div>
+      </div>
+      <div class="col-md-2">
+        <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">Second</span>
+          <input type="text" class="form-control" id="second" name="Second" value="0" aria-describedby="basic-addon1">
+          </div>
+      </div>
+      <div class="col-md-2">
+        <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">Core</span>
+          <input type="text" class="form-control" id="core" name="Core" value="0" aria-describedby="basic-addon1">
+          </div>
+      </div>
+      <div class="col-md-2">
+        <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">Concurrency</span>
+          <input type="text" class="form-control" id="concurrency" name="Concurrency" value="0" aria-describedby="basic-addon1">
+          </div>
+      </div>
+      <div class="col-md-4"></div>
+    </div>
+    <br/>
+    <div class="row">
       <div class="col-md-3">
         <button type="button" class="btn btn-primary" id="form-post")>GO!</button>
       </div>
@@ -99,7 +128,6 @@ $(function() {
 
 var notice = new Notifier({selector: "#status"});
 var api = new Client();
-var deviceName;
 
 function DeviceList() {
     api.getDevices().done(function (devices) {
@@ -114,10 +142,11 @@ function DeviceList() {
 
 $('#device-list').on("click", "a.device", function(evt) {
     evt.preventDefault();
-    deviceName = $(this).html();
+    var device = $(this).html();
     var index = $(this).attr('deviceIndex');
     var macAddr = $(this).attr('macAddr');
     var ip = "10.0.0.1"; // default IP
+    $('#devicename').val(device);
     $('#src-eth').val(macAddr);
     api.getIPByIndex(index).done(function(data) {
         if (data.length > 0) {
@@ -158,9 +187,12 @@ $('#dst-ip-list').on("click", "a.dstip", function(evt) {
 $('#form-post').on('click', function() {
     var data = $('#udpgen-config').serializeArray();
     var config = mkConfigData(data);
-    console.log(config);
+    if (config == null) {
+        return
+    }
+    console.log(config) // Debugging now....
     api.postConfig(JSON.stringify(config)).done(function(data) {
-        console.log("Sent");
+        notice.success("Sent Request");
     });
 });
 
@@ -174,7 +206,20 @@ function mkConfigData(data) {
     }
     value.SrcPort = Number(value.SrcPort);
     value.DstPort = Number(value.DstPort);
-    value.Device = deviceName;
+    value.Count = Number(value.Count);
+    /*
+    value.Core = Number(value.Core);
+    value.Second = Number(value.Second);
+    value.Concurrency = Number(value.Concurrency);
+    */
+    delete value.Core;
+    delete value.Second;
+    delete value.Concurrency;
+
+    if (!value.Device) {
+        notice.danger("Select Device");
+        return null;
+    }
     return value;
 }
 
