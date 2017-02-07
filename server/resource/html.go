@@ -32,26 +32,25 @@ const(
       <div class="col-md-9"></div>
     </div>
     <br/>
-    <form action="/test" method="POST">
+    <form id="udpgen-config">
     <div class="row">
       <div class="col-md-6">
         <div class="input-group">
           <span class="input-group-addon" id="sizing-addon1">Src PORT </span>
-          <input type="text" class="form-control" id="udp-src" placeholder="5000" aria-describedby="sizing-addon1">
+          <input type="text" class="form-control" id="src-udp" name="SrcPort" value="5000" aria-describedby="sizing-addon1">
         </div>
       </div><!-- src port -->
       <div class="col-md-6">
         <div class="input-group">
           <span class="input-group-addon" id="sizing-addon1">Dst PORT </span>
-          <input type="text" class="form-control" id="udp-dst" placeholder="5000" aria-describedby="sizing-addon1">                    
-        </div>
+          <input type="text" class="form-control" id="dst-udp" name="DstPort" value="5000" aria-describedby="sizing-addon1">                   </div>
       </div><!-- dst port -->
     </div>
     <div class="row">
       <div class="col-md-6">
         <div class="input-group">
           <span class="input-group-addon" id="sizing-addon1">Src Addr </span>
-          <input type="text" class="form-control" name="srceth" id="src-eth" placeholder="src mac" aria-describedby="sizing-addon1">
+          <input type="text" class="form-control" id="src-eth" name="SrcEth" placeholder="Source MacAddress" aria-describedby="sizing-addon1">
         </div>
       </div><!-- src eth -->
       <div class="col-md-6">
@@ -60,7 +59,7 @@ const(
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dst Addr <span class="caret"></span></button>
             <ul class="dropdown-menu" id="dst-eth-list"></ul>
           </div>
-          <input type="text" class="form-control" id="dst-eth" placeholder="dst eth" aria-label="...">          
+          <input type="text" class="form-control" id="dst-eth" name="DstEth" placeholder="Destination MacAddress" aria-label="...">
         </div>
       </div>
     </div><!-- dst eth -->
@@ -68,7 +67,7 @@ const(
       <div class="col-md-6">
         <div class="input-group">
           <span class="input-group-addon" id="sizing-addon1">Src IP </span>
-          <input type="text" class="form-control" id="src-ip" placeholder="src ip" aria-describedby="sizing-addon1">
+          <input type="text" class="form-control" id="src-ip" name="SrcIP" placeholder="Source IP" aria-describedby="sizing-addon1">
         </div>
       </div><!-- src ip -->
       <div class="col-md-6">
@@ -78,14 +77,14 @@ const(
             <ul class="dropdown-menu" id="dst-ip-list">
             </ul>
           </div>
-          <input type="text" class="form-control" id="dst-ip" placeholder="dst ip" aria-label="...">          
+          <input type="text" class="form-control" id="dst-ip" name="DstIP" placeholder="Destination IP" aria-label="...">
         </div>
       </div><!-- dst ip -->
     </div>
     <br/>
     <div class="row">
       <div class="col-md-3">
-        <button type="submit" class="btn btn-primary">GO!</button>
+        <button type="button" class="btn btn-primary" id="form-post")>GO!</button>
       </div>
       <div class="col-md-9"></div>
     </div>
@@ -109,26 +108,27 @@ function DeviceList() {
     api.getDevices().done(function (devices) {
         var list = []
         for (var i=0; i < devices.length; i++) {
-            list.push('<li><a href="#" deviceIndex="' + devices[i].Index + '" macAddr="' + devices[i].MacAddr
-                      + '" onclick=SetSrcEthAndIP(this)>' + devices[i].Name + '</a></li>');
+            list.push('<li><a href="#" class="device" deviceIndex="' + devices[i].Index + '" macAddr="' + devices[i].MacAddr
+                      + '">' + devices[i].Name + '</a></li>');
         }
         $('#device-list').html(list);
     });
 }
 
-function SetSrcEthAndIP(data) {
-    var index = data.getAttribute("deviceIndex");
-    var macAddr = data.getAttribute("macAddr");
+$('#device-list').on("click", "a.device", function(evt) {
+    evt.preventDefault();
+    var index = $(this).attr('deviceIndex');
+    var macAddr = $(this).attr('macAddr');
     var ip = "10.0.0.1"; // default IP
-    $('#src-eth').attr("placeholder", macAddr);
+    $('#src-eth').val(macAddr);
     api.getIPByIndex(index).done(function(data) {
         if (data.length > 0) {
             ip = data[0].IP; // pick up first ip
         }
-        $('#src-ip').attr("placeholder", ip);
+        $('#src-ip').val(ip);
     });
     UpdateDstEtherAndIPMenu(index);
-}
+});
 
 function UpdateDstEtherAndIPMenu(index) {
     api.getArpTable(index).done(function(tables) {
@@ -137,25 +137,32 @@ function UpdateDstEtherAndIPMenu(index) {
         for (var i=0; i< tables.length; i++) {
             var mac = tables[i].MacAddr;
             var ip = tables[i].IP;
-            macList.push('<li><a href="#" macAddr="' + mac + '" onclick=SetDstEth(this)>' + mac + ' ( ' + ip + ')</a></li>');
-            ipList.push('<li><a href="#" ip="' + ip + '" onclick=SetDstIP(this)>' + ip + ' ( ' + mac + ')</a></li>');
+            macList.push('<li><a href="#" class="dsteth" macAddr="' + mac + '">' + mac + ' ( ' + ip + ')</a></li>');
+            ipList.push('<li><a href="#" class="dstip" ip="' + ip + '">' + ip + ' ( ' + mac + ')</a></li>');
         }
         $('#dst-eth-list').html(macList);
         $('#dst-ip-list').html(ipList);
     });
 }
 
-function SetDstEth(data) {
-    var macAddr = data.getAttribute("macAddr");
-    $('#dst-eth').attr("placeholder", macAddr);
-}
+$('#dst-eth-list').on("click", "a.dsteth", function(evt) {
+    evt.preventDefault();
+    var macAddr = $(this).attr("macAddr");
+    $('#dst-eth').val(macAddr);
+});
 
-function SetDstIP(data) {
-    var ip = data.getAttribute("ip");
-    $('#dst-ip').attr("placeholder", ip);
-}
+$('#dst-ip-list').on("click", "a.dstip", function(evt) {
+    evt.preventDefault();
+    var ip = $(this).attr("ip");
+    $('#dst-ip').val(ip);
+});
 
-  </script>
+$('#form-post').on('click', function() {
+    var data = JSON.stringify( $('#udpgen-config').serializeArray());
+    console.log(data);
+});
+
+</script>
 </body>
 </html>
 `
