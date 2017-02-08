@@ -21,16 +21,16 @@ func (c *Config)ExecFromCLI() error {
 		return err
 	}
 
-	d := worker.NewPacketSender(2, c.Device)
+	d := worker.NewPacketSender(c.Concurrency, c.Device)
 
 	d.Start()
 	start := time.Now()
-	for i := 0; i < 100000; i++ {
+	for i := uint64(0); i < c.Count; i++ {
 		d.Send(packet)
 	}
 	end := time.Now()
 	fmt.Printf("Required Time: %f sec\n",(end.Sub(start)).Seconds())
-
+	d.Stop()
 	return nil
 }
 

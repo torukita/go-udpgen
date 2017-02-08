@@ -5,6 +5,7 @@ import(
 	"github.com/torukita/go-udpgen/device"
 	"fmt"
 	"os"
+	"sync/atomic"
 )
 
 var (
@@ -16,6 +17,7 @@ type PacketSender struct {
 	deviceHandle *device.Handle
 	queue        chan []byte // packet
 	wg           sync.WaitGroup
+	counter      uint64
 }
 
 func NewPacketSender(maxWorkers int, devicename string) *PacketSender {
@@ -46,6 +48,7 @@ func (d *PacketSender) Start() {
 					fmt.Println(err)
 					return
 				}
+				atomic.AddUint64(&d.counter, 1)
 			}
 		}()
 	}
@@ -58,4 +61,6 @@ func (d *PacketSender) Stop() {
 	}()
 	close(d.queue)
 	d.wg.Wait()
+	counterFinal := atomic.LoadUint64(&d.counter)
+	fmt.Printf("Total sent packets: %v\n", counterFinal)
 }

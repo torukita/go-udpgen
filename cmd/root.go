@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-var version = "v0.0.2"
+var version = "v0.0.3"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
@@ -47,6 +47,9 @@ var sendCmd = &cobra.Command{
 		config.DstPort = uint16(udp_dst)
 		config.Second = time.Duration(viper.GetInt64("time")) * time.Second
 		config.Count = uint64(viper.GetInt64("count"))
+		if viper.GetInt("concurrency") != 0 {
+			config.Concurrency = viper.GetInt("concurrency")
+		}
 
 		err := config.ExecFromCLI()
 		if err != nil {
@@ -93,27 +96,7 @@ func init() {
 	sendCmd.Flags().Uint64("count", 1, "The number of packets to be send")
 	viper.BindPFlag("count", sendCmd.Flags().Lookup("count"))	
 
-/*	
-	RootCmd.Flags().String("src-eth", "00:00:00:00:00:01", "Source mac address")
-	RootCmd.Flags().String("dst-eth", "00:00:00:00:00:02", "Dest mac address")
-	RootCmd.Flags().String("src-ip", "10.0.40.1", "Source IP address")
-	RootCmd.Flags().String("dst-ip", "10.0.40.2", "Dest IP address")
-	RootCmd.Flags().String("src-port", "9999", "UDP source port")
-	RootCmd.Flags().String("dst-port", "9999", "UDP dest port")
-	RootCmd.Flags().String("device", "eth0", "Device name")
-	RootCmd.Flags().Uint64("time", 0, "seconds which keeps sending packtes")
-	RootCmd.Flags().Uint64("count", 1, "The number of packets to be send")
-	
-
-	viper.BindPFlag("root.src-eth", RootCmd.Flags().Lookup("src-eth"))
-	viper.BindPFlag("root.dst-eth", RootCmd.Flags().Lookup("dst-eth"))
-	viper.BindPFlag("root.src-ip", RootCmd.Flags().Lookup("src-ip"))
-	viper.BindPFlag("root.dst-ip", RootCmd.Flags().Lookup("dst-ip"))
-	viper.BindPFlag("root.src-port", RootCmd.Flags().Lookup("src-port"))
-	viper.BindPFlag("root.dst-port", RootCmd.Flags().Lookup("dst-port"))
-	viper.BindPFlag("root.device", RootCmd.Flags().Lookup("device"))
-	viper.BindPFlag("root.time", RootCmd.Flags().Lookup("time"))
-	viper.BindPFlag("root.count", RootCmd.Flags().Lookup("count"))
-*/
+	sendCmd.Flags().Int("concurrency", 0, "The number of goroutines to use")
+	viper.BindPFlag("concurrency", sendCmd.Flags().Lookup("concurrency"))
 
 }
