@@ -6,8 +6,8 @@ import(
 	"net/http"
 	"context"
 	"github.com/labstack/echo"	
-	"github.com/torukita/go-udpgen/device"
-	"github.com/torukita/go-udpgen/pkt"	
+	"github.com/torukita/go-udpgen/pkt"
+	"github.com/torukita/go-udpgen/worker"
 )
 
 var (
@@ -15,61 +15,43 @@ var (
 )
 
 func WebSend(c echo.Context) error {
-	req := new(Config)
+	req := NewConfig()
 	if err := c.Bind(req); err != nil {
 		return err
 	}
+	fmt.Printf("%+v", req)
 
 	if procSend > 0 {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	procSend++
-//	fmt.Printf("Start(%v)", procSend)	
+
 	err := req.ExecFromWeb()
-	procSend--
-//	fmt.Printf("Stop(%v)", procSend)
 	
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	//return c.JSON(http.StatusAccepted, nil)
-	return c.JSON(http.StatusOK, nil)	
+	return c.JSON(http.StatusAccepted, nil)
 }
 
 func (c *Config)ExecFromWeb() error {
 	if err := c.parse(); err != nil {
 		return err
 	}
-	handle, err := device.Open(c.Device)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		fmt.Println("handle closed")
-		device.Close(handle)
-	}()
-
 	eth := pkt.NewEthernet(c.SrcEth, c.DstEth)
 	ip  := pkt.NewIPv4(c.SrcIP, c.DstIP)
 	udp := pkt.NewUDP(c.SrcPort, c.DstPort)
-	packet, err := pkt.UDPPacket(64, eth, ip, udp)
+	packet, err := pkt.UDPPacket(c.Size, eth, ip, udp)
+
 	if err != nil {
 		return err
 	}
 
-	if (c.Second == 0) {
-		go func() {
-			for i:= uint64(0); i < c.Count; i++ {
-				if err := Send(handle,packet); err != nil {
-					fmt.Println(err)
-					return
-				}
-			}
-			fmt.Println("Done send packet")
-		}()
-	} else {
-		go SendTimer(c.Second, handle, packet)
+	d := worker.NewPacketSender(c.Concurrency, c.Device)
+	d.Start()
+	for i := uint64(0); i < c.Count; i++ {
+		d.Send(packet)
 	}
+	d.Stop()
 	return nil
 }
 

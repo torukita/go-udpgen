@@ -56,7 +56,7 @@ func (d *PacketSender) Start() {
 
 func (d *PacketSender) Stop() {
 	defer func() {
-		fmt.Println("closing...")
+		// fmt.Println("closing...")
 		device.Close(d.deviceHandle)
 	}()
 	close(d.queue)

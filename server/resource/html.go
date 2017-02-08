@@ -84,36 +84,35 @@ const(
     </div>
     <br/>
     <div class="row">
-      <div class="col-md-2">
+      <div class="col-md-3">
         <div class="input-group">
           <span class="input-group-addon" id="basic-addon1">Count</span>
           <input type="text" class="form-control" id="count" name="Count" value="1" aria-describedby="basic-addon1">
           </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <div class="input-group">
           <span class="input-group-addon" id="basic-addon1">Second</span>
           <input type="text" class="form-control" id="second" name="Second" value="0" aria-describedby="basic-addon1">
           </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <div class="input-group">
-          <span class="input-group-addon" id="basic-addon1">Core</span>
-          <input type="text" class="form-control" id="core" name="Core" value="0" aria-describedby="basic-addon1">
+          <span class="input-group-addon" id="basic-addon1">FrameSize</span>
+          <input type="text" class="form-control" id="core" name="Size" value="64" aria-describedby="basic-addon1">
           </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <div class="input-group">
           <span class="input-group-addon" id="basic-addon1">Concurrency</span>
-          <input type="text" class="form-control" id="concurrency" name="Concurrency" value="0" aria-describedby="basic-addon1">
+          <input type="text" class="form-control" id="concurrency" name="Concurrency" value="2" aria-describedby="basic-addon1">
           </div>
       </div>
-      <div class="col-md-4"></div>
     </div>
     <br/>
     <div class="row">
       <div class="col-md-3">
-        <button type="button" class="btn btn-primary" id="form-post")>GO!</button>
+        <button type="button" id="form-post" data-process-text="Processing..." class="btn btn-primary" autocomplete="off">Go!</button>
       </div>
       <div class="col-md-9"></div>
     </div>
@@ -194,9 +193,16 @@ $('#form-post').on('click', function() {
     if (config == null) {
         return
     }
-    console.log(config) // Debugging now....
+    // console.log(config) // Debugging now....
+    var $btn = $(this).button('process');
+    $btn.prop("disabled", true);
+    var startTime = new Date();
     api.postConfig(JSON.stringify(config)).done(function(data) {
-        notice.success("Sent Request");
+        var endTime = new Date();
+        var message = "Requited Time: " + (endTime - startTime) + " ms";
+        notice.success(message);
+        $btn.button('reset');
+        $btn.prop("disabled", false);
     });
 });
 
@@ -211,14 +217,13 @@ function mkConfigData(data) {
     value.SrcPort = Number(value.SrcPort);
     value.DstPort = Number(value.DstPort);
     value.Count = Number(value.Count);
-    /*
-    value.Core = Number(value.Core);
-    value.Second = Number(value.Second);
+    value.Size = Number(value.Size);
     value.Concurrency = Number(value.Concurrency);
+    /*
+
+    value.Second = Number(value.Second);
     */
-    delete value.Core;
     delete value.Second;
-    delete value.Concurrency;
 
     if (!value.Device) {
         notice.danger("Select Device");

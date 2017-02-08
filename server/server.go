@@ -6,11 +6,18 @@ import(
 	"github.com/torukita/go-udpgen/server/resource"
 	"github.com/torukita/go-udpgen/api"	
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"	
 	"text/template"
 	"net/http"
 	"io"
 	"strconv"
 	"fmt"
+)
+
+var (
+	logConfig = middleware.LoggerConfig{
+		Format: "${time_rfc3339} ${status} ${method} ${uri} ${latency_human}\n",
+	}
 )
 
 type Template struct {
@@ -34,7 +41,6 @@ func JS(c echo.Context) error {
 	return c.Render(http.StatusOK, "js", nil)
 }
 
-
 func Run(addr string, debug bool) {
 	// FIXME: should have better template handling
 	jstemplate := template.Must(template.New("js").Parse(resource.JSText))
@@ -47,10 +53,12 @@ func Run(addr string, debug bool) {
 	e.Debug = debug
 	e.Renderer = t
 
+	e.Use(middleware.LoggerWithConfig(logConfig))
+	//e.Use(middleware.Logger())
 	// Define Rest API
 	g := e.Group("/api")
 	g.POST("/send", api.WebSend)
-	g.POST("/config", Test)	
+	g.POST("/config", api.WebSend)
 	g.GET("/devices", getDevices) // Not used on this app
 	g.GET("/device/:index/arp", getArpTable)
 	g.GET("/device/:index/ipv4", getIPByIndex)
