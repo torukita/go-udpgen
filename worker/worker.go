@@ -7,15 +7,18 @@ import(
 	"os"
 )
 
+var (
+	maxQueues = 1000
+)
+
 type PacketSender struct {
 	maxWorkers   int
-	maxQueues    int64
 	deviceHandle *device.Handle
 	queue        chan []byte // packet
 	wg           sync.WaitGroup
 }
 
-func NewPacketSender(maxWorkers int, maxQueues int64, devicename string) *PacketSender {
+func NewPacketSender(maxWorkers int, devicename string) *PacketSender {
 	handle, err := device.Open(devicename)
 	if err != nil {
 		fmt.Println("error")
@@ -23,7 +26,6 @@ func NewPacketSender(maxWorkers int, maxQueues int64, devicename string) *Packet
 	}
 	d := &PacketSender{
 		maxWorkers: maxWorkers,
-		maxQueues: maxQueues,
 		deviceHandle: handle,
 		queue: make(chan []byte, maxQueues),
 	}
@@ -50,10 +52,10 @@ func (d *PacketSender) Start() {
 }
 
 func (d *PacketSender) Stop() {
-	close(d.queue)
-	d.wg.Wait()
 	defer func() {
 		fmt.Println("closing...")
 		device.Close(d.deviceHandle)
 	}()
+	close(d.queue)
+	d.wg.Wait()
 }

@@ -6,7 +6,7 @@ import(
 	"net/http"
 	"context"
 	"github.com/labstack/echo"	
-	"github.com/torukita/go-udpgen/pcap"
+	"github.com/torukita/go-udpgen/device"
 	"github.com/torukita/go-udpgen/pkt"	
 )
 
@@ -40,13 +40,13 @@ func (c *Config)ExecFromWeb() error {
 	if err := c.parse(); err != nil {
 		return err
 	}
-	handle, err := pcap.Open(c.Device)
+	handle, err := device.Open(c.Device)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		fmt.Println("handle closed")
-		handle.Close()
+		device.Close(handle)
 	}()
 
 	eth := pkt.NewEthernet(c.SrcEth, c.DstEth)
