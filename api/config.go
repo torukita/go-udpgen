@@ -40,7 +40,7 @@ func NewConfig() *Config {
 	return &Config{
 		Device: "eth0",
 		Core: runtime.NumCPU(),
-		Concurrency: runtime.NumCPU(),
+		Concurrency: runtime.GOMAXPROCS(runtime.NumCPU()),
 		SrcEth: "00:00:00:00:00:01",
 		DstEth: "00:00:00:00:00:02",
 		SrcIP: "10.0.0.1",
@@ -49,13 +49,6 @@ func NewConfig() *Config {
 		DstPort: 5000,
 	}
 }
-
-/*
-func (c *Config)String() string {
-	str := fmt.Sprintf("%+v", c)
-	return str
-}
-*/
 
 func (c *Config)Dump() {
 	fmt.Printf("%+v\n", c)
