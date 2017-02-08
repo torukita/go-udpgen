@@ -33,6 +33,7 @@ type Config struct {
 	DstIP       string         `json:"dstip"`
 	SrcPort     uint16         `json:"srcport"`
 	DstPort     uint16         `json:"dstport"`
+	Size        int            `json:"size"`
 }
 
 func NewConfig() *Config {
@@ -47,6 +48,7 @@ func NewConfig() *Config {
 		DstIP: "10.0.0.2",
 		SrcPort: 8888,
 		DstPort: 5000,
+		Size: 64,
 	}
 }
 

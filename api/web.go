@@ -52,7 +52,7 @@ func (c *Config)ExecFromWeb() error {
 	eth := pkt.NewEthernet(c.SrcEth, c.DstEth)
 	ip  := pkt.NewIPv4(c.SrcIP, c.DstIP)
 	udp := pkt.NewUDP(c.SrcPort, c.DstPort)
-	packet, err := pkt.UDPPacket(eth, ip, udp)
+	packet, err := pkt.UDPPacket(64, eth, ip, udp)
 	if err != nil {
 		return err
 	}

@@ -15,7 +15,7 @@ func (c *Config)ExecFromCLI() error {
 	eth := pkt.NewEthernet(c.SrcEth, c.DstEth)
 	ip  := pkt.NewIPv4(c.SrcIP, c.DstIP)
 	udp := pkt.NewUDP(c.SrcPort, c.DstPort)
-	packet, err := pkt.UDPPacket(eth, ip, udp)
+	packet, err := pkt.UDPPacket(c.Size, eth, ip, udp)
 
 	if err != nil {
 		return err

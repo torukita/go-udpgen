@@ -50,6 +50,9 @@ var sendCmd = &cobra.Command{
 		if viper.GetInt("concurrency") != 0 {
 			config.Concurrency = viper.GetInt("concurrency")
 		}
+		if viper.GetInt("size") != 64 {
+			config.Size = viper.GetInt("size")
+		}
 
 		err := config.ExecFromCLI()
 		if err != nil {
@@ -98,5 +101,8 @@ func init() {
 
 	sendCmd.Flags().Int("concurrency", 0, "The number of goroutines to use")
 	viper.BindPFlag("concurrency", sendCmd.Flags().Lookup("concurrency"))
+
+	sendCmd.Flags().Int("size", 64, "The length of ethernet frame (size >=64)")
+	viper.BindPFlag("size", sendCmd.Flags().Lookup("size"))
 
 }
