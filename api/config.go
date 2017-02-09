@@ -1,7 +1,6 @@
 package api
 
 import(
-	"time"
 	"runtime"
 	"fmt"
 	"net"
@@ -26,7 +25,7 @@ type Config struct {
 	Concurrency int            `json:"concurrency"`
 	Core        int            `json:"core"`
 	Count       uint64         `json:"count"`
-	Second      time.Duration  `json:"second"`
+	Timer       int64          `json:"timer"`
 	SrcEth      string         `json:"srceth"`
 	DstEth      string         `json:"dsteth"`
 	SrcIP       string         `json:"srcip"`
@@ -65,9 +64,6 @@ func (c *Config)parse() error {
 	}
 	if !IsAllowedNet(c.SrcIP) || !IsAllowedNet(c.DstIP) {
 		return fmt.Errorf("Denied IP")
-	}
-	if c.Second != 0 {
-		c.Second = c.Second * time.Second
 	}
 	return nil
 }

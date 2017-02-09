@@ -92,8 +92,8 @@ const(
       </div>
       <div class="col-md-3">
         <div class="input-group">
-          <span class="input-group-addon" id="basic-addon1">Second</span>
-          <input type="text" class="form-control" id="second" name="Second" value="0" aria-describedby="basic-addon1">
+          <span class="input-group-addon" id="basic-addon1">Timer</span>
+          <input type="text" class="form-control" id="second" name="Timer" value="0" aria-describedby="basic-addon1">
           </div>
       </div>
       <div class="col-md-3">
@@ -221,9 +221,9 @@ function mkConfigData(data) {
     value.Concurrency = Number(value.Concurrency);
     /*
 
-    value.Second = Number(value.Second);
+    value.Timer = Number(value.Timer);
     */
-    delete value.Second;
+    delete value.Timer;
 
     if (!value.Device) {
         notice.danger("Select Device");

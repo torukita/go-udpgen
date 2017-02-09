@@ -11,7 +11,7 @@ func (c *Config)ExecFromCLI() error {
 	if err := c.parse(); err != nil {
 		return err
 	}
-
+	
 	eth := pkt.NewEthernet(c.SrcEth, c.DstEth)
 	ip  := pkt.NewIPv4(c.SrcIP, c.DstIP)
 	udp := pkt.NewUDP(c.SrcPort, c.DstPort)
@@ -24,13 +24,23 @@ func (c *Config)ExecFromCLI() error {
 	d := worker.NewPacketSender(c.Concurrency, c.Device)
 
 	d.Start()
-	start := time.Now()
+
+	timer := time.NewTimer(time.Duration(c.Timer) * time.Second)
+	if c.Timer == 0 { timer.Stop() }
+
+	start := time.Now()	
+Loop:
 	for i := uint64(0); i < c.Count; i++ {
-		d.Send(packet)
+		select {
+		case <-timer.C:
+			break Loop
+		default:
+			d.Send(packet)
+		}
 	}
-	end := time.Now()
-	fmt.Printf("Required Time: %f sec\n",(end.Sub(start)).Seconds())
+	timer.Stop()
 	d.Stop()
+	fmt.Printf("Required Time: %f sec\n", time.Since(start).Seconds())	
 	return nil
 }
 

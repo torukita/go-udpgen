@@ -6,7 +6,6 @@ import (
 	"github.com/torukita/go-udpgen/api"
 	"log"
 	"strconv"
-	"time"
 	"os"
 )
 
@@ -33,7 +32,7 @@ var sendCmd = &cobra.Command{
 		udp_dst, _ := strconv.Atoi(viper.GetString("send.dst-port"))
 		config.SrcPort = uint16(udp_src)
 		config.DstPort = uint16(udp_dst)
-		config.Second = time.Duration(viper.GetInt64("send.time")) * time.Second
+		config.Timer = viper.GetInt64("send.timer")
 		config.Count = uint64(viper.GetInt64("send.count"))
 		if viper.GetInt("send.concurrency") != 0 {
 			config.Concurrency = viper.GetInt("send.concurrency")
@@ -71,8 +70,8 @@ func init() {
 	sendCmd.Flags().String("dst-port", "9999", "UDP dest port")
 	viper.BindPFlag("send.dst-port", sendCmd.Flags().Lookup("dst-port"))
 
-	sendCmd.Flags().Uint64("time", 0, "seconds which keeps sending packtes")
-	viper.BindPFlag("send.time", sendCmd.Flags().Lookup("time"))
+	sendCmd.Flags().Uint64("timer", 0, "stop in seconds later")
+	viper.BindPFlag("send.timer", sendCmd.Flags().Lookup("timer"))
 
 	sendCmd.Flags().Uint64("count", 1, "The number of packets to be send")
 	viper.BindPFlag("send.count", sendCmd.Flags().Lookup("count"))	
